@@ -5,14 +5,14 @@ import { useHealth } from '../api/health'
 import { BottomNav } from '../components/BottomNav'
 import { DESTINATION_PATHS } from '../components/navigation'
 import { StatusBadge } from '../components/StatusBadge'
-import type { StatusTone } from '../components/StatusBadge'
+// import type { StatusTone } from '../components/StatusBadge'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
 
-const HEALTH_TONE: Record<string, StatusTone> = {
-  checking: 'neutral',
-  connected: 'success',
-  unavailable: 'warning',
-}
+// const HEALTH_TONE: Record<string, StatusTone> = {
+//   checking: 'neutral',
+//   connected: 'success',
+//   unavailable: 'warning',
+// }
 
 interface AppShellProps {
   children: ReactNode

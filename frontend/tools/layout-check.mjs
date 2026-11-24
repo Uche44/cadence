@@ -107,8 +107,8 @@ async function measure(page, width, path) {
       }
 
       const bodyFont = getComputedStyle(document.body).fontFamily
-      if (!bodyFont.includes('Plus Jakarta Sans')) {
-        problems.push(`${path} at ${width}px: body font is "${bodyFont}", not Plus Jakarta Sans`)
+      if (!bodyFont.includes('Nunito')) {
+        problems.push(`${path} at ${width}px: body font is "${bodyFont}", not Nunito`)
       }
 
       return { problems, title: document.title }

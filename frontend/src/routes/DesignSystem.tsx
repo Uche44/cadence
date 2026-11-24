@@ -103,7 +103,7 @@ export function DesignSystem() {
         <TokenSwatches />
       </Section>
 
-      <Section title="Type scale" note="Plus Jakarta Sans, self-hosted">
+      <Section title="Type scale" note="Nunito, self-hosted">
         <div className="design__stack">
           {TYPE_SCALE.map(({ className, name, meta }) => (
             <div key={name} className="design__type-row">

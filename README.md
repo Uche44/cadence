@@ -89,6 +89,7 @@ Tokens live in `frontend/src/styles/tokens.css`; primitives live in `frontend/sr
 
 Deliberate deviations from the reference screens, so they are not mistaken for oversights:
 
+- Body type is **Nunito**, self-hosted via `@fontsource-variable/nunito`, replacing the reference's Plus Jakarta Sans. Nunito's rounder forms suit the pebble language; swap the token and the import to change it back.
 - Muted text uses `#4b5563` rather than `#64748b`. The reference tone measures 4.34:1 on the periwinkle canvas, below the 4.5:1 floor. Icons still use `#64748b`, which clears 3:1.
 - Icons are inline SVG rather than a Material Symbols webfont, so the offline shell has no third-party font dependency.
 - The 3D artwork is cropped and alpha-preserved from the reference asset rather than re-rendered.

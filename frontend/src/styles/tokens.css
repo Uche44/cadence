@@ -70,9 +70,7 @@
   --margin: 1.25rem;
 
   /* Type */
-  --font-sans:
-    'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI',
-    sans-serif;
+  --font-sans: 'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --text-display: 2.25rem;
   --text-display-mobile: 1.75rem;
