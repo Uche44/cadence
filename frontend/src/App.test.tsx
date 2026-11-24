@@ -36,6 +36,13 @@ describe('application shell', () => {
     expect(screen.getByRole('link', { name: /skip to content/i })).toBeInTheDocument()
   })
 
+  it('shows no connection badge on the welcome screen', () => {
+    renderAt('/')
+
+    expect(screen.queryByText('Connected')).not.toBeInTheDocument()
+    expect(screen.queryByText('Checking connection…')).not.toBeInTheDocument()
+  })
+
   it('exposes exactly one level-one heading per screen', () => {
     renderAt('/today')
 

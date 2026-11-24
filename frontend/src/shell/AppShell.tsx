@@ -5,14 +5,14 @@ import { useHealth } from '../api/health'
 import { BottomNav } from '../components/BottomNav'
 import { DESTINATION_PATHS } from '../components/navigation'
 import { StatusBadge } from '../components/StatusBadge'
-// import type { StatusTone } from '../components/StatusBadge'
+import type { StatusTone } from '../components/StatusBadge'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
 
-// const HEALTH_TONE: Record<string, StatusTone> = {
-//   checking: 'neutral',
-//   connected: 'success',
-//   unavailable: 'warning',
-// }
+const HEALTH_TONE: Record<string, StatusTone> = {
+  checking: 'neutral',
+  connected: 'success',
+  unavailable: 'warning',
+}
 
 interface AppShellProps {
   children: ReactNode
@@ -30,16 +30,16 @@ export function AppShell({ children }: AppShellProps) {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <header className={isWelcome ? 'app__header app__header--end' : 'app__header'}>
-        {isWelcome ? null : (
+      {isWelcome ? null : (
+        <header className="app__header">
           <Link to="/" className="app__brand">
             Cadence
           </Link>
-        )}
-        <StatusBadge tone={online ? HEALTH_TONE[health.state] : 'warning'}>
-          {online ? health.label : 'Offline'}
-        </StatusBadge>
-      </header>
+          <StatusBadge tone={online ? HEALTH_TONE[health.state] : 'warning'}>
+            {online ? health.label : 'Offline'}
+          </StatusBadge>
+        </header>
+      )}
       {!online ? (
         <p className="offline-banner" role="status">
           You are offline. Your last saved plan is still available.
