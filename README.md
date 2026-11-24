@@ -6,16 +6,17 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 1 of 15 complete** — foundation, configuration, and test harness.
+**Milestone 2 of 15 complete** — app shell, design system, and installable PWA.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
-M1 gives you: a FastAPI app, a React + TypeScript app, one origin in production, explicit configuration that fails fast when misconfigured, JSON everywhere including errors, and two test suites that have been proven able to fail.
+M2 gives you: the Serene Pebble design tokens and primitives, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
 
 ## Requirements
 
 - Python 3.11+
 - Node 20+
+- Chromium (only for the layout check; set `CHROMIUM_PATH` if it is not at `/usr/bin/chromium`)
 - `make` (optional, but every command below has a make target)
 
 ## Install
@@ -35,6 +36,8 @@ make dev-web    # terminal 2 — http://127.0.0.1:5173
 
 Open http://127.0.0.1:5173. The header shows a connection status drawn from `GET /api/health`.
 
+The service worker is disabled in development on purpose, so a stale cache never hides your changes. It only exists in a production build.
+
 ## Run as production
 
 One process serves both the API and the built frontend.
@@ -44,24 +47,57 @@ make build
 cd backend && .venv/bin/uvicorn app.asgi:app --port 8000
 ```
 
-Open http://127.0.0.1:8000 — the same URL serves the app and the API.
+Open http://127.0.0.1:8000 — the same URL serves the app and the API. Load it once with the network available, then reload with the network disabled: the shell still renders and the header says **Offline**.
 
-## Tests
+## Tests and checks
 
 ```bash
-make test        # both suites
-make lint        # ruff, eslint, typecheck
-make harness     # proves both runners fail when a test fails
-make verify      # everything above, plus a production build
+make test         # backend + frontend suites
+make lint         # ruff, eslint, prettier, design contract, typecheck
+make check-pwa    # manifest, icons, service worker, precache, font
+make check-layout # real Chromium at 320/390/430px, writes screenshots/
+make harness      # proves both runners fail when a test fails
+make verify       # everything above, plus a production build
 ```
 
-The backend suite covers the health contract, configuration validation in every environment, single-origin serving rules (API beats the SPA shell, unknown API paths stay JSON), error responses leaking nothing, version drift, and a credential scan that is itself tested against synthetic keys.
+The design contract is a real check, not a convention. `tools/design-checks.mjs` fails the build when:
+
+- a required token disappears from `tokens.css`
+- a colour literal appears anywhere under `src/` except `tokens.css`
+- an interactive root stops declaring the 48px touch floor
+- text uses the lighter muted ink, which does not pass 4.5:1 on the canvas
+- a quoted token name does not exist in `tokens.css`
+- a reference colour or the touch floor drifts from the documented value
+
+Each of those checks is itself tested with a synthetic failing case, because a check that cannot fail is not a check.
+
+## Design system
+
+Tokens live in `frontend/src/styles/tokens.css`; primitives live in `frontend/src/components/`. Visit `/design` in a running build to see every token value, the type scale, and every primitive in every state.
+
+| Primitive | Notes |
+|---|---|
+| `PillButton` | four variants, two sizes, icon slots; `pillButtonClasses()` for links |
+| `Card` | six pastel tones plus surface |
+| `Chip` / `Tag` | selectable chip exposes `aria-pressed`; tag is static |
+| `Input` | label, hint, error, icon; error is announced via `role="alert"` |
+| `Toggle` | `role="switch"` with a visible label as its accessible name |
+| `BottomNav` | four destinations, floating or inline, `aria-current` |
+| `Sheet` | modal dialog: focus held, Escape closes, focus returns |
+| `StatTile` | four tones, tabular numerals |
+| `StatusBadge` | five semantic tones |
+
+Deliberate deviations from the reference screens, so they are not mistaken for oversights:
+
+- Muted text uses `#4b5563` rather than `#64748b`. The reference tone measures 4.34:1 on the periwinkle canvas, below the 4.5:1 floor. Icons still use `#64748b`, which clears 3:1.
+- Icons are inline SVG rather than a Material Symbols webfont, so the offline shell has no third-party font dependency.
+- The 3D artwork is cropped and alpha-preserved from the reference asset rather than re-rendered.
 
 ## Configuration
 
 Copy `backend/.env.example` to `backend/.env`. Development needs no secrets to boot.
 
-In production the app **refuses to start** unless `CADENCE_SECRET_KEY`, `CADENCE_LLM_API_KEY`, and `CADENCE_LLM_MODEL` are set, and the error names every missing variable at once. That is intentional: a misconfigured deploy should fail at boot, not in front of a judge.
+In production the app **refuses to start** unless `CADENCE_SECRET_KEY`, `CADENCE_LLM_API_KEY`, and `CADENCE_LLM_MODEL` are set, and the error names every missing variable at once.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -77,8 +113,8 @@ In production the app **refuses to start** unless `CADENCE_SECRET_KEY`, `CADENCE
 
 ```
 backend/    FastAPI app, tests, configuration
-frontend/   Vite + React + TypeScript, tests
-scripts/    harness verification
+frontend/   Vite + React + TypeScript, design system, tests, build tools
+scripts/    harness verification, icon and artwork generation
 design_reference/   the 16 reference screens
 ```
 
@@ -87,3 +123,4 @@ design_reference/   the 16 reference screens
 - No seeded data and no placeholder personas. The app starts empty and is filled in by a real person.
 - The LLM never decides safety. That distinction arrives with the safety packs in M4.
 - Times are minute-resolution and the planning day is **wake to bedtime**, not midnight.
+- The four bottom-nav destinations exist as honest empty states until their milestones land.

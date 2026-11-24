@@ -19,4 +19,5 @@ frontend/dist/
 
 # Tooling
 coverage/
+screenshots/
 .DS_Store

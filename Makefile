@@ -2,7 +2,7 @@ PY := backend/.venv/bin/python
 VENV := backend/.venv
 PORT ?= 8000
 
-.PHONY: help install install-backend install-frontend dev-api dev-web test test-backend test-frontend lint format build harness verify clean
+.PHONY: help install install-backend install-frontend dev-api dev-web test test-backend test-frontend check-pwa check-layout icons lint format build harness verify clean
 
 help:
 	@echo "install          set up backend venv and frontend packages"
@@ -12,8 +12,11 @@ help:
 	@echo "lint             ruff, eslint, and typecheck"
 	@echo "format           apply ruff format and prettier"
 	@echo "build            build the frontend into frontend/dist"
+	@echo "check-pwa        verify manifest, icons, service worker"
+	@echo "check-layout     drive real Chromium at 320/390/430px"
+	@echo "icons            regenerate app icons and artwork"
 	@echo "harness          prove both test runners can fail"
-	@echo "verify           lint + test + build + harness"
+	@echo "verify           lint + test + build + pwa + layout + harness"
 
 install: install-backend install-frontend
 
@@ -39,6 +42,16 @@ test-backend:
 test-frontend:
 	cd frontend && npm test
 
+check-pwa:
+	cd frontend && npm run check:pwa
+
+check-layout:
+	cd frontend && npm run check:layout
+
+icons:
+	backend/.venv/bin/python scripts/generate_icons.py
+	backend/.venv/bin/python scripts/prepare_assets.py
+
 lint:
 	cd backend && .venv/bin/ruff check .
 	cd backend && .venv/bin/ruff format --check .
@@ -56,7 +69,7 @@ build:
 harness:
 	bash scripts/verify_harness.sh
 
-verify: lint test build harness
+verify: lint test build check-pwa check-layout harness
 	@echo
 	@echo "All milestone checks passed."
 
