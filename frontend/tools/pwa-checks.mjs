@@ -107,9 +107,7 @@ const invokedDirectly =
 
 if (invokedDirectly) {
   const frontendRoot = fileURLToPath(new URL('..', import.meta.url))
-  const tokens = parseTokens(
-    readFileSync(join(frontendRoot, 'src', 'styles', 'tokens.css'), 'utf8'),
-  )
+  const tokens = parseTokens(readFileSync(join(frontendRoot, 'src', 'styles', 'index.css'), 'utf8'))
   const problems = checkBuild(join(frontendRoot, 'dist'), tokens)
 
   if (problems.length > 0) {

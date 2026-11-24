@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 
+import { cn } from '../lib/cn'
 import { CloseIcon } from './icons'
 
 const FOCUSABLE_SELECTOR = [
@@ -102,31 +103,43 @@ export function Sheet({ open, onClose, title, children, closeLabel = 'Close' }: 
   }
 
   return (
-    <div className="sheet">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center">
       <button
         type="button"
-        className="sheet__backdrop"
+        className="absolute inset-0 border-0 bg-backdrop"
         aria-label={`Dismiss ${title}`}
         onClick={onClose}
       />
       <div
         ref={panelRef}
-        className="sheet__panel"
+        className={cn(
+          'relative flex max-h-[88dvh] w-full max-w-app flex-col gap-5 overflow-y-auto',
+          'rounded-t-xl bg-canvas px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]',
+          'animate-sheet motion-reduce:animate-none',
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <span className="sheet__handle" aria-hidden="true" />
-        <div className="sheet__header">
-          <h2 className="sheet__title" id={titleId}>
+        <span className="mx-auto mb-2 h-1 w-12 rounded-pill bg-outline" aria-hidden="true" />
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-headline-lg" id={titleId}>
             {title}
           </h2>
-          <button type="button" className="sheet__close" aria-label={closeLabel} onClick={onClose}>
+          <button
+            type="button"
+            className={cn(
+              'inline-flex size-12 shrink-0 items-center justify-center rounded-pill',
+              'border-0 bg-canvas-sunken text-ink cursor-pointer',
+            )}
+            aria-label={closeLabel}
+            onClick={onClose}
+          >
             <CloseIcon />
           </button>
         </div>
-        <div className="sheet__body">{children}</div>
+        <div className="flex flex-col gap-4">{children}</div>
       </div>
     </div>
   )

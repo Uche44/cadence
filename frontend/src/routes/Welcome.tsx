@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import pebbles from '../assets/cadence-pebbles.png'
 import { Tag } from '../components/Chip'
 import { pillButtonClasses } from '../components/buttonStyles'
 import {
@@ -10,7 +11,7 @@ import {
   ShieldIcon,
   SparkleIcon,
 } from '../components/icons'
-import pebbles from '../assets/cadence-pebbles.png'
+import { cn } from '../lib/cn'
 
 const FEATURES = [
   { label: 'Energy-smart', Icon: BoltIcon },
@@ -20,42 +21,59 @@ const FEATURES = [
 
 export function Welcome() {
   return (
-    <section className="welcome" aria-labelledby="welcome-heading">
-      <div className="welcome__wordmark">
+    <section
+      className="flex flex-col items-center gap-5 py-5 text-center"
+      aria-labelledby="welcome-heading"
+    >
+      <div className="inline-flex items-center gap-3 rounded-pill bg-surface px-6 py-2 shadow-card">
         <LeafIcon width={22} height={22} aria-hidden="true" />
-        <span className="welcome__wordmark-text">Cadence</span>
+        <span className="text-display-mobile text-ink-heading">Cadence</span>
       </div>
 
-      <h1 id="welcome-heading" className="welcome__tagline">
+      <h1 id="welcome-heading" className="max-w-[18ch] text-headline-lg font-semibold text-ink">
         Exercise that keeps pace with your life.
       </h1>
 
-      <p className="welcome__note">
+      <p className="inline-flex w-fit max-w-full items-center gap-2 rounded-pill bg-lavender-soft px-4 py-2 text-label-lg text-accent-strong">
         <LeafIcon width={16} height={16} aria-hidden="true" /> Your gentle companion for chronic
         wellness
       </p>
 
-      <div className="welcome__art">
-        <img src={pebbles} alt="" width={256} height={256} loading="eager" decoding="async" />
+      <div className="flex w-full justify-center">
+        <img
+          src={pebbles}
+          alt=""
+          width={256}
+          height={256}
+          loading="eager"
+          decoding="async"
+          className="h-auto w-[min(16rem,72%)]"
+        />
       </div>
 
-      <div className="welcome__floats">
+      <div className="-mt-8 flex w-full justify-between px-1">
         <Tag tone="lavender">
           <HeartIcon width={16} height={16} aria-hidden="true" /> At your pace
         </Tag>
         <Tag tone="apricot">Zero pressure</Tag>
       </div>
 
-      <ul className="welcome__features">
+      <ul className="grid w-full grid-cols-3 gap-3">
         {FEATURES.map(({ label, Icon }) => (
-          <li key={label} className="welcome__feature">
-            <Icon width={22} height={22} aria-hidden="true" />
+          <li
+            key={label}
+            className={cn(
+              'flex flex-col items-center gap-2 rounded-lg bg-surface px-1 py-4',
+              'text-center text-label-md text-ink shadow-card',
+            )}
+          >
+            <Icon width={22} height={22} className="text-accent-strong" aria-hidden="true" />
             <span>{label}</span>
           </li>
         ))}
       </ul>
 
-      <div className="welcome__actions">
+      <div className="mt-2 flex w-full flex-col gap-3">
         <Link
           to="/today"
           className={pillButtonClasses({ variant: 'primary', size: 'lg', fullWidth: true })}
@@ -71,7 +89,9 @@ export function Welcome() {
         </Link>
       </div>
 
-      <p className="welcome__fineprint">Personalized daily rhythm · Designed for human bodies</p>
+      <p className="text-body-sm text-muted">
+        Personalized daily rhythm · Designed for human bodies
+      </p>
     </section>
   )
 }

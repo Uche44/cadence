@@ -1,3 +1,5 @@
+import { cn } from '../lib/cn'
+
 export type PillButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 export type PillButtonSize = 'md' | 'lg'
 
@@ -6,6 +8,13 @@ interface PillButtonClassOptions {
   size?: PillButtonSize
   fullWidth?: boolean
   className?: string
+}
+
+const VARIANT_CLASSES: Record<PillButtonVariant, string> = {
+  primary: 'bg-ink text-on-ink',
+  secondary: 'bg-surface text-ink shadow-card',
+  ghost: 'bg-transparent text-ink',
+  danger: 'bg-danger text-on-ink',
 }
 
 /**
@@ -20,13 +29,13 @@ export function pillButtonClasses({
   fullWidth = false,
   className,
 }: PillButtonClassOptions = {}): string {
-  return [
-    'pill-button',
-    `pill-button--${variant}`,
-    size === 'lg' ? 'pill-button--lg' : '',
-    fullWidth ? 'pill-button--full' : '',
-    className ?? '',
-  ]
-    .filter(Boolean)
-    .join(' ')
+  return cn(
+    'inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-pill border-0 px-6',
+    'text-label-lg no-underline transition duration-150 ease-out',
+    'cursor-pointer active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-45',
+    VARIANT_CLASSES[variant],
+    size === 'lg' && 'min-h-13 px-8 text-body-lg',
+    fullWidth && 'w-full',
+    className,
+  )
 }

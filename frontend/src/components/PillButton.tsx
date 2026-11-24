@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
+import { cn } from '../lib/cn'
 import { pillButtonClasses } from './buttonStyles'
 import type { PillButtonSize, PillButtonVariant } from './buttonStyles'
 
@@ -23,7 +24,7 @@ export function PillButton({
   ...rest
 }: PillButtonProps) {
   const adornment = icon ? (
-    <span aria-hidden="true" className="pill-button__icon">
+    <span aria-hidden="true" className="inline-flex">
       {icon}
     </span>
   ) : null
@@ -31,7 +32,7 @@ export function PillButton({
   return (
     <button
       type={type}
-      className={pillButtonClasses({ variant, size, fullWidth, className })}
+      className={cn(pillButtonClasses({ variant, size, fullWidth }), className)}
       {...rest}
     >
       {iconPosition === 'start' ? adornment : null}

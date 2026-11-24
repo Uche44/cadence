@@ -10,7 +10,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
-M2 gives you: the Serene Pebble design tokens and primitives, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
+M2 gives you: the Serene Pebble design system in Tailwind, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
 
 ## Requirements
 
@@ -62,18 +62,23 @@ make verify       # everything above, plus a production build
 
 The design contract is a real check, not a convention. `tools/design-checks.mjs` fails the build when:
 
-- a required token disappears from `tokens.css`
-- a colour literal appears anywhere under `src/` except `tokens.css`
-- an interactive root stops declaring the 48px touch floor
-- text uses the lighter muted ink, which does not pass 4.5:1 on the canvas
-- a quoted token name does not exist in `tokens.css`
-- a reference colour or the touch floor drifts from the documented value
+- a required token disappears from the Tailwind theme
+- a colour literal appears anywhere under `src/` except the theme file
+- a quoted token name does not exist in the theme
+- a reference colour drifts from the documented value
+- any text pair falls below its contrast floor
 
 Each of those checks is itself tested with a synthetic failing case, because a check that cannot fail is not a check.
 
+Computed layout is verified separately in a real browser by `tools/layout-check.mjs`: 48px minimum touch targets, no horizontal overflow, no clipped headings, and the resolved body font — at 320, 390, and 430px.
+
 ## Design system
 
-Tokens live in `frontend/src/styles/tokens.css`; primitives live in `frontend/src/components/`. Visit `/design` in a running build to see every token value, the type scale, and every primitive in every state.
+The theme lives in `frontend/src/styles/index.css` as Tailwind v4 `@theme` variables, so tokens generate utilities directly: `bg-lavender`, `text-headline-lg`, `rounded-pill`, `shadow-card`, `max-w-app`. Spacing uses Tailwind's numeric scale, so the 48px touch floor is `min-h-12`.
+
+Primitives live in `frontend/src/components/` and are composed from utilities. `lib/cn.ts` wraps `clsx` plus `tailwind-merge`, extended with this project's type and colour token names — without that, `tailwind-merge` cannot tell `text-label-lg` (a size) from `text-on-ink` (a colour) and silently drops one.
+
+Visit `/design` in a running build to see every token value, the type scale, radii, shadows, and every primitive in every state.
 
 | Primitive | Notes |
 |---|---|
@@ -89,8 +94,9 @@ Tokens live in `frontend/src/styles/tokens.css`; primitives live in `frontend/sr
 
 Deliberate deviations from the reference screens, so they are not mistaken for oversights:
 
-- Body type is **Nunito**, self-hosted via `@fontsource-variable/nunito`, replacing the reference's Plus Jakarta Sans. Nunito's rounder forms suit the pebble language; swap the token and the import to change it back.
-- Muted text uses `#4b5563` rather than `#64748b`. The reference tone measures 4.34:1 on the periwinkle canvas, below the 4.5:1 floor. Icons still use `#64748b`, which clears 3:1.
+- Body type is **Nunito**, self-hosted via `@fontsource-variable/nunito`, replacing the reference's Plus Jakarta Sans. Nunito's rounder forms suit the pebble language; swap the theme token and the import to change it back.
+- Styling is **Tailwind v4** utilities rather than the hand-written CSS in the reference export. The theme file is still the single home for tokens.
+- Muted text uses `#4b5563` rather than `#64748b`. The reference tone measures 4.34:1 on the periwinkle canvas, below the 4.5:1 floor, so the accessible slate is the only muted colour exposed as a utility.
 - Icons are inline SVG rather than a Material Symbols webfont, so the offline shell has no third-party font dependency.
 - The 3D artwork is cropped and alpha-preserved from the reference asset rather than re-rendered.
 

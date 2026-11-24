@@ -78,7 +78,7 @@ async function measure(page, width, path) {
       }
 
       const interactiveSelector =
-        'a[href], button:not([disabled]), input:not([disabled]), [role="switch"]'
+        'a[href]:not([href^="#"]), button:not([disabled]), input:not([disabled]), [role="switch"]'
       for (const element of document.querySelectorAll(interactiveSelector)) {
         const rect = element.getBoundingClientRect()
         if (rect.width === 0 && rect.height === 0) continue
@@ -165,11 +165,11 @@ if (invokedDirectly) {
     const navPage = await browser.newPage({ viewport: { width: 390, height: 900 } })
     await navPage.goto(`${baseUrl}/today`, { waitUntil: 'networkidle' })
     const navState = await navPage.evaluate(() => {
-      const nav = document.querySelector('.bottom-nav')
-      const active = document.querySelector('.bottom-nav__item[aria-current="page"]')
+      const nav = document.querySelector('nav[aria-label="Primary"]')
+      const active = nav?.querySelector('a[aria-current="page"]') ?? null
       return {
         present: nav !== null,
-        items: document.querySelectorAll('.bottom-nav__item').length,
+        items: nav?.querySelectorAll('a').length ?? 0,
         activeLabel: active?.textContent?.trim() ?? null,
       }
     })

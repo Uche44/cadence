@@ -2,7 +2,7 @@
  * The colour tokens shown on the design-system page.
  *
  * Kept out of the component so a test can verify every name here actually
- * exists in tokens.css. A typo would otherwise render as a blank swatch.
+ * exists in the Tailwind theme. A typo would otherwise render as a blank swatch.
  */
 export const COLOR_TOKENS = [
   '--color-canvas',
@@ -10,20 +10,21 @@ export const COLOR_TOKENS = [
   '--color-surface',
   '--color-ink',
   '--color-ink-heading',
-  '--color-ink-muted',
-  '--color-ink-muted-strong',
+  '--color-muted',
+  '--color-on-ink',
   '--color-accent',
   '--color-accent-strong',
-  '--color-tint-lavender',
-  '--color-tint-lavender-soft',
-  '--color-tint-apricot',
-  '--color-tint-apricot-soft',
-  '--color-tint-sky',
-  '--color-tint-sky-soft',
-  '--color-tint-mint',
-  '--color-tint-mint-soft',
-  '--color-tint-blush',
-  '--color-tint-blush-soft',
+  '--color-outline',
+  '--color-lavender',
+  '--color-lavender-soft',
+  '--color-apricot',
+  '--color-apricot-soft',
+  '--color-sky',
+  '--color-sky-soft',
+  '--color-mint',
+  '--color-mint-soft',
+  '--color-blush',
+  '--color-blush-soft',
   '--color-success-ink',
   '--color-warning-ink',
   '--color-danger',

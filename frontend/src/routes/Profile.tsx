@@ -1,9 +1,9 @@
 export function Profile() {
   return (
-    <div className="page">
-      <p className="page__eyebrow type-label-md">Profile</p>
-      <h1 className="type-display-mobile">Your setup</h1>
-      <p className="type-body-md muted">
+    <div className="flex flex-col gap-4 py-3">
+      <p className="text-label-md text-accent-strong">Profile</p>
+      <h1 className="text-display-mobile">Your setup</h1>
+      <p className="text-body-md text-muted">
         Your conditions, interests, and routine live here once you have completed onboarding.
       </p>
     </div>
