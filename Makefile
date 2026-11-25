@@ -2,12 +2,13 @@ PY := backend/.venv/bin/python
 VENV := backend/.venv
 PORT ?= 8000
 
-.PHONY: help install install-backend install-frontend dev-api dev-web test test-backend test-frontend check-pwa check-layout icons lint format build harness verify clean
+.PHONY: help install install-backend install-frontend dev-api dev-web migrate test test-backend test-frontend check-pwa check-layout icons lint format build harness verify clean
 
 help:
 	@echo "install          set up backend venv and frontend packages"
 	@echo "dev-api          run the API on :8000 (terminal 1)"
 	@echo "dev-web          run the frontend on :5173 (terminal 2)"
+	@echo "migrate          apply database migrations"
 	@echo "test             run both test suites"
 	@echo "lint             ruff, eslint, and typecheck"
 	@echo "format           apply ruff format and prettier"
@@ -33,6 +34,9 @@ dev-api:
 
 dev-web:
 	cd frontend && npm run dev
+
+migrate:
+	cd backend && .venv/bin/alembic upgrade head
 
 test: test-backend test-frontend
 

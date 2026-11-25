@@ -7,6 +7,8 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
 ]
 
 [project.optional-dependencies]
@@ -38,6 +40,7 @@ filterwarnings = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

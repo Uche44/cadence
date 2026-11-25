@@ -6,7 +6,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 5 of 15 implemented, pending review** — the plan gate and fallback planner.
+**Milestone 6 of 15 implemented, pending review** — persistence and the domain model.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
@@ -16,7 +16,9 @@ M3 gave you: `compute_free_windows` — the waking-day model, buffered and clipp
 
 M4 gave you: five authored condition packs that resolve into one most-restrictive rule set, a conservative fallback for any condition we have not written rules for, a notice that says so, and validation strict enough that a malformed pack stops the app at boot.
 
-M5 gives you: `validate_plan`, a gate that reports every way a candidate plan breaks the rules; `build_fallback_plan`, a deterministic gentle plan used when generation fails; and `red_flag_stop`, which ends the day instead of planning one.
+M5 gave you: `validate_plan`, a gate that reports every way a candidate plan breaks the rules; `build_fallback_plan`, a deterministic gentle plan used when generation fails; and `red_flag_stop`, which ends the day instead of planning one.
+
+M6 gives you: ten tables covering the whole flow, with integrity enforced by SQLite rather than by convention, and Alembic migrations that apply from empty, re-run safely, and are checked against the models for drift.
 
 ## Requirements
 
@@ -138,6 +140,28 @@ Every candidate plan is validated before it can reach a person. The gate reports
 When generation fails validation, times out, or returns something unparseable, `build_fallback_plan` produces a plan from the same free windows. It is intentionally unimaginative: ten-minute gentle blocks at the start of each window, lowest intensity, tags filtered against the blocked list, daily allowance respected by truncating rather than squeezing blocks below the minimum. If no window is long enough it returns an empty plan with a stated reason rather than inventing a session.
 
 Red-flag symptoms short-circuit the whole pipeline: `red_flag_stop` returns a stop signal and no plan is generated, validated, or shown. Matching tolerates honest wording — "lightheaded" against "lightheadedness", "chest pain" against "chest pain, pressure or tightness" — but not bare body parts, so "knee pain" stays an ordinary report.
+
+## Database
+
+SQLite through SQLAlchemy 2, with Alembic migrations in `backend/migrations/`. Run them before the first boot:
+
+```bash
+make migrate
+```
+
+The app does not migrate itself. Migrations are a deploy step, and an app that silently alters its own schema is an app you cannot reason about.
+
+Three PRAGMAs are applied on every connection, because SQLite's defaults are wrong for this:
+
+- `foreign_keys=ON` — SQLite ignores foreign keys unless asked, so a cascade test would otherwise pass while orphans accumulated.
+- `journal_mode=WAL` — readers do not block the writer, which matters once a plan is being generated while someone is checking in.
+- `busy_timeout` — a brief write collision waits instead of failing.
+
+Time is stored as **minutes since midnight** rather than as SQLite time strings. The scheduler and validator already work in whole minutes, so storing anything else would invite rounding at the boundary. Timestamps are stored in UTC and read back timezone-aware; a naive datetime is rejected rather than silently assumed to be local.
+
+Uniqueness and ordering are database constraints, not conventions: one account per email (case-insensitively), one profile per user, one check-in per local day, one plan per check-in, one completion per block, one consent per version, ordered start and end minutes on commitments and blocks, bedtime after wake time, and a session that expires after it begins. Deleting a user cascades to everything they own.
+
+The suite also compares the migrated schema against the SQLAlchemy models, because drift between the two is a silent production break.
 
 ## Configuration
 

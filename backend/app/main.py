@@ -17,6 +17,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.health import router as health_router
 from app.config import Settings, get_settings
+from app.db import create_engine_for, create_session_factory
 from app.safety.registry import PackRegistry
 
 logger = logging.getLogger("cadence")
@@ -46,6 +47,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.settings = resolved
     # A malformed pack must stop the boot, not surface as a missing rule later.
     application.state.safety_registry = PackRegistry.from_directory(resolved.safety_packs_dir)
+    application.state.engine = create_engine_for(resolved.database_url)
+    application.state.session_factory = create_session_factory(application.state.engine)
 
     # Order matters: real routes, then the API 404 responder, then the shell.
     application.include_router(health_router, prefix=API_PREFIX)
