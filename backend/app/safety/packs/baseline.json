@@ -1,0 +1,28 @@
+{
+  "id": "baseline",
+  "label": "General fitness",
+  "kind": "baseline",
+  "max_intensity": "moderate",
+  "max_block_minutes": 30,
+  "min_block_minutes": 5,
+  "max_daily_minutes": 60,
+  "blocked_tags": [],
+  "red_flag_symptoms": [
+    "chest pain, pressure or tightness",
+    "fainting or near-fainting",
+    "severe shortness of breath at rest"
+  ],
+  "sources": [
+    "WHO 2020 Guidelines on physical activity and sedentary behaviour"
+  ],
+  "guidance": [
+    "Build towards about 150 minutes of moderate movement a week, in whatever blocks fit the day.",
+    "Add strength work twice a week when equipment and energy allow."
+  ],
+  "aliases": [
+    "general fitness",
+    "stay fit",
+    "no condition",
+    "none"
+  ]
+}

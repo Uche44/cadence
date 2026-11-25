@@ -19,6 +19,7 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app import __version__
+from app.safety.registry import DEFAULT_PACKS_DIR
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = BACKEND_DIR.parent
@@ -52,6 +53,7 @@ class Settings(BaseSettings):
     llm_model: str = ""
 
     static_dir: Path = DEFAULT_STATIC_DIR
+    safety_packs_dir: Path = DEFAULT_PACKS_DIR
 
     @property
     def is_production(self) -> bool:

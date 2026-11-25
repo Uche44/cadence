@@ -1,0 +1,35 @@
+{
+  "id": "hypertension",
+  "label": "Hypertension",
+  "kind": "clinical",
+  "max_intensity": "moderate",
+  "max_block_minutes": 25,
+  "min_block_minutes": 5,
+  "max_daily_minutes": 45,
+  "blocked_tags": [
+    "heavy_resistance",
+    "valsalva_maneuver",
+    "isometric_max",
+    "inverted_posture"
+  ],
+  "red_flag_symptoms": [
+    "chest pain, pressure or tightness",
+    "a sudden severe headache",
+    "changes in vision",
+    "shortness of breath at rest"
+  ],
+  "sources": [
+    "AHA/ACC guidance on physical activity and blood pressure",
+    "WHO 2020 Guidelines on physical activity and sedentary behaviour"
+  ],
+  "guidance": [
+    "Favour continuous, rhythmic movement over sudden bursts of effort.",
+    "Breathe through effort rather than holding your breath.",
+    "Avoid straining or positions where your head is below your heart."
+  ],
+  "aliases": [
+    "high blood pressure",
+    "raised blood pressure",
+    "htn"
+  ]
+}

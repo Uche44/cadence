@@ -1,0 +1,36 @@
+{
+  "id": "type_2_diabetes",
+  "label": "Type 2 diabetes",
+  "kind": "clinical",
+  "max_intensity": "moderate",
+  "max_block_minutes": 20,
+  "min_block_minutes": 5,
+  "max_daily_minutes": 45,
+  "blocked_tags": [
+    "high_impact",
+    "sprint_intervals",
+    "fasted_vigorous"
+  ],
+  "red_flag_symptoms": [
+    "chest pain, pressure or tightness",
+    "shakiness, sweating or confusion that could be low blood sugar",
+    "sudden blurred vision",
+    "a foot wound or blister that is getting worse"
+  ],
+  "sources": [
+    "ADA Standards of Care: Physical Activity and Exercise",
+    "WHO 2020 Guidelines on physical activity and sedentary behaviour"
+  ],
+  "guidance": [
+    "Short blocks after meals help glucose uptake more than a single long session.",
+    "Prefer low-impact movement, and check feet afterwards.",
+    "If you take insulin or a sulfonylurea, keep a fast-acting carbohydrate nearby."
+  ],
+  "aliases": [
+    "type 2 diabetes",
+    "diabetes type 2",
+    "type ii diabetes",
+    "t2d",
+    "t2dm"
+  ]
+}

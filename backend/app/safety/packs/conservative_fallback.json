@@ -1,0 +1,31 @@
+{
+  "id": "conservative_fallback",
+  "label": "Conservative fallback",
+  "kind": "conservative",
+  "max_intensity": "low",
+  "max_block_minutes": 10,
+  "min_block_minutes": 5,
+  "max_daily_minutes": 20,
+  "blocked_tags": [
+    "high_impact",
+    "sprint_intervals",
+    "fasted_vigorous",
+    "heavy_resistance",
+    "valsalva_maneuver",
+    "isometric_max",
+    "inverted_posture",
+    "loaded_flexion",
+    "loaded_twisting"
+  ],
+  "red_flag_symptoms": [
+    "chest pain, pressure or tightness",
+    "fainting or near-fainting",
+    "severe shortness of breath at rest"
+  ],
+  "sources": [],
+  "guidance": [
+    "Keep movement brief, gentle and easy to stop.",
+    "Confirm with a doctor which movements suit this condition before building a routine."
+  ],
+  "aliases": []
+}

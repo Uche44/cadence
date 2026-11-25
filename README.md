@@ -6,13 +6,15 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 3 of 15 implemented, pending review** — the free-window scheduler.
+**Milestone 4 of 15 implemented, pending review** — safety packs and rule resolution.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
 M2 gave you: the Serene Pebble design system in Tailwind, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
 
-M3 gives you: `compute_free_windows` — the waking-day model, buffered and clipped commitments, merged busy spans, minimum-window filtering, typed errors, and a Hypothesis suite checked against an independent minute-by-minute oracle.
+M3 gave you: `compute_free_windows` — the waking-day model, buffered and clipped commitments, merged busy spans, minimum-window filtering, typed errors, and a Hypothesis suite checked against an independent minute-by-minute oracle.
+
+M4 gives you: five authored condition packs that resolve into one most-restrictive rule set, a conservative fallback for any condition we have not written rules for, a notice that says so, and validation strict enough that a malformed pack stops the app at boot.
 
 ## Requirements
 
@@ -112,6 +114,21 @@ Deliberate deviations from the reference screens, so they are not mistaken for o
 - Icons are inline SVG rather than a Material Symbols webfont, so the offline shell has no third-party font dependency.
 - The 3D artwork is cropped and alpha-preserved from the reference asset rather than re-rendered.
 
+## Safety rules
+
+Rules are data, not prompt text. Each condition is a JSON file in `backend/app/safety/packs/` carrying an intensity cap, block and daily duration limits, blocked exercise tags, red-flag symptoms, published sources, and guidance notes for the planner.
+
+Resolution takes the most restrictive value of every field: the lowest intensity cap, the shortest maximum block, the smallest daily total, the largest minimum block, and the union of every blocked tag and red flag. Declaring a second condition can therefore only tighten a plan, never widen it — which the test suite asserts as a property rather than by example.
+
+Two things are deliberate:
+
+- The general-fitness baseline always applies, so a user with no conditions still gets sensible limits and no doctor-clearance gate.
+- A condition we have not authored adds the conservative pack (low intensity, 10-minute blocks, 20 minutes a day) and a notice naming it. It never silently becomes a general fitness plan. `"diabetes"` without a type is treated as unauthored on purpose, because type 1 and type 2 need different guidance.
+
+Packs are validated when the app boots. An unknown field, a bad intensity label, a clinical pack without a citation, or two packs claiming the same alias raises an error naming the offending file, and the app refuses to start. Adding a condition is dropping a JSON file into the directory — no code change.
+
+**These limits are illustrative.** They are drawn from published guidance and are not a substitute for clinical review before real use.
+
 ## Configuration
 
 Copy `backend/.env.example` to `backend/.env`. Development needs no secrets to boot.
@@ -127,6 +144,7 @@ In production the app **refuses to start** unless `CADENCE_SECRET_KEY`, `CADENCE
 | `CADENCE_LLM_API_KEY` | — | Provider key; required in production |
 | `CADENCE_LLM_MODEL` | — | Model id; required in production |
 | `CADENCE_STATIC_DIR` | `frontend/dist` | Where the built frontend lives |
+| `CADENCE_SAFETY_PACKS_DIR` | `backend/app/safety/packs` | Condition packs to load and validate at boot |
 
 ## Layout
 

@@ -1,0 +1,37 @@
+{
+  "id": "chronic_low_back_pain",
+  "label": "Chronic low back pain / mild arthritis",
+  "kind": "clinical",
+  "max_intensity": "moderate",
+  "max_block_minutes": 20,
+  "min_block_minutes": 5,
+  "max_daily_minutes": 40,
+  "blocked_tags": [
+    "high_impact",
+    "heavy_resistance",
+    "loaded_flexion",
+    "loaded_twisting"
+  ],
+  "red_flag_symptoms": [
+    "numbness around the groin or saddle area",
+    "new loss of bladder or bowel control",
+    "progressive weakness in one or both legs",
+    "pain that is worse at night or at rest"
+  ],
+  "sources": [
+    "ACSM guidance on exercise for chronic low back pain",
+    "WHO 2020 Guidelines on physical activity and sedentary behaviour"
+  ],
+  "guidance": [
+    "Gentle mobility and walking usually help more than complete rest.",
+    "Stop any movement that causes sharp or radiating pain.",
+    "Favour supported positions over deep loaded bending or twisting."
+  ],
+  "aliases": [
+    "chronic back pain",
+    "low back pain",
+    "back pain",
+    "mild arthritis",
+    "arthritis"
+  ]
+}
