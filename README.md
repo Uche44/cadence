@@ -6,7 +6,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 4 of 15 implemented, pending review** — safety packs and rule resolution.
+**Milestone 5 of 15 implemented, pending review** — the plan gate and fallback planner.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
@@ -14,7 +14,9 @@ M2 gave you: the Serene Pebble design system in Tailwind, the reference welcome 
 
 M3 gave you: `compute_free_windows` — the waking-day model, buffered and clipped commitments, merged busy spans, minimum-window filtering, typed errors, and a Hypothesis suite checked against an independent minute-by-minute oracle.
 
-M4 gives you: five authored condition packs that resolve into one most-restrictive rule set, a conservative fallback for any condition we have not written rules for, a notice that says so, and validation strict enough that a malformed pack stops the app at boot.
+M4 gave you: five authored condition packs that resolve into one most-restrictive rule set, a conservative fallback for any condition we have not written rules for, a notice that says so, and validation strict enough that a malformed pack stops the app at boot.
+
+M5 gives you: `validate_plan`, a gate that reports every way a candidate plan breaks the rules; `build_fallback_plan`, a deterministic gentle plan used when generation fails; and `red_flag_stop`, which ends the day instead of planning one.
 
 ## Requirements
 
@@ -76,7 +78,7 @@ Each of those checks is itself tested with a synthetic failing case, because a c
 
 Computed layout is verified separately in a real browser by `tools/layout-check.mjs`: 48px minimum touch targets, no horizontal overflow, no clipped headings, and the resolved body font — at 320, 390, and 430px.
 
-The scheduler suite adds 33 cases, three of them property-based over 250–300 generated days, and checks the scheduler against an independent brute-force oracle that marks every minute of the day free or busy.
+The scheduler suite adds 33 cases, three of them property-based over 250–300 generated days, and checks the scheduler against an independent brute-force oracle that marks every minute of the day free or busy. The safety and plan-gate suites add 105 more, including properties that build real schedules with the scheduler and real rule sets from the packs, then assert the fallback is always accepted by the gate.
 
 ## Scheduling model
 
@@ -128,6 +130,14 @@ Two things are deliberate:
 Packs are validated when the app boots. An unknown field, a bad intensity label, a clinical pack without a citation, or two packs claiming the same alias raises an error naming the offending file, and the app refuses to start. Adding a condition is dropping a JSON file into the directory — no code change.
 
 **These limits are illustrative.** They are drawn from published guidance and are not a substitute for clinical review before real use.
+
+## The plan gate
+
+Every candidate plan is validated before it can reach a person. The gate reports all of: intensity above the cap, a block longer than the maximum, a block shorter than the minimum, a daily total over the limit, a blocked exercise tag, a block outside a free window, and overlapping blocks. It reports every problem at once rather than stopping at the first, and it names the offending block by index and title.
+
+When generation fails validation, times out, or returns something unparseable, `build_fallback_plan` produces a plan from the same free windows. It is intentionally unimaginative: ten-minute gentle blocks at the start of each window, lowest intensity, tags filtered against the blocked list, daily allowance respected by truncating rather than squeezing blocks below the minimum. If no window is long enough it returns an empty plan with a stated reason rather than inventing a session.
+
+Red-flag symptoms short-circuit the whole pipeline: `red_flag_stop` returns a stop signal and no plan is generated, validated, or shown. Matching tolerates honest wording — "lightheaded" against "lightheadedness", "chest pain" against "chest pain, pressure or tightness" — but not bare body parts, so "knee pain" stays an ordinary report.
 
 ## Configuration
 

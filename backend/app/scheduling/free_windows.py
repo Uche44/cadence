@@ -11,6 +11,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import time
 
+from app.timeutil import to_minutes, to_time
+
 #: A schedule is whole-minute: seconds are floored, never rounded.
 SECONDS_IGNORED = 0
 
@@ -35,15 +37,6 @@ class InvalidScheduleConfigError(SchedulingError):
     """A buffer or minimum-window setting is out of range."""
 
 
-def _to_minutes(moment: time) -> int:
-    """Minutes since midnight, flooring seconds."""
-    return moment.hour * 60 + moment.minute
-
-
-def _to_time(minutes: int) -> time:
-    return time(minute=minutes % 60, hour=minutes // 60)
-
-
 @dataclass(frozen=True, slots=True)
 class TimeWindow:
     """A contiguous stretch of free time inside the waking day."""
@@ -52,7 +45,7 @@ class TimeWindow:
     end: time
 
     def __post_init__(self) -> None:
-        if _to_minutes(self.end) <= _to_minutes(self.start):
+        if to_minutes(self.end) <= to_minutes(self.start):
             raise ValueError(
                 f"a time window must end after it starts, got {self.start.isoformat()} "
                 f"to {self.end.isoformat()}"
@@ -60,7 +53,7 @@ class TimeWindow:
 
     @property
     def duration_minutes(self) -> int:
-        return _to_minutes(self.end) - _to_minutes(self.start)
+        return to_minutes(self.end) - to_minutes(self.start)
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,8 +99,8 @@ def compute_free_windows(
             f"min_window_minutes must be positive, got {min_window_minutes}"
         )
 
-    start_minutes = _to_minutes(day_start)
-    end_minutes = _to_minutes(day_end)
+    start_minutes = to_minutes(day_start)
+    end_minutes = to_minutes(day_end)
     if end_minutes <= start_minutes:
         raise InvalidDayError(
             f"day_end ({day_end.isoformat()}) must be after day_start ({day_start.isoformat()})"
@@ -127,8 +120,8 @@ def _busy_spans(
     spans: list[tuple[int, int]] = []
 
     for commitment in commitments:
-        commitment_start = _to_minutes(commitment.start)
-        commitment_end = _to_minutes(commitment.end)
+        commitment_start = to_minutes(commitment.start)
+        commitment_end = to_minutes(commitment.end)
 
         if commitment_end < commitment_start:
             raise InvalidCommitmentError(
@@ -172,10 +165,10 @@ def _free_gaps(
 
     for span_start, span_end in busy:
         if span_start - cursor >= min_window_minutes:
-            windows.append(TimeWindow(_to_time(cursor), _to_time(span_start)))
+            windows.append(TimeWindow(to_time(cursor), to_time(span_start)))
         cursor = max(cursor, span_end)
 
     if day_end - cursor >= min_window_minutes:
-        windows.append(TimeWindow(_to_time(cursor), _to_time(day_end)))
+        windows.append(TimeWindow(to_time(cursor), to_time(day_end)))
 
     return windows
