@@ -6,11 +6,13 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 2 of 15 complete** — app shell, design system, and installable PWA.
+**Milestone 3 of 15 implemented, pending review** — the free-window scheduler.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
-M2 gives you: the Serene Pebble design system in Tailwind, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
+M2 gave you: the Serene Pebble design system in Tailwind, the reference welcome screen, a design-system page at `/design`, a self-hosted font, generated app icons, a web manifest, an offline-capable service worker, and checks that prove the design contract, installability, and real layout at three phone widths.
+
+M3 gives you: `compute_free_windows` — the waking-day model, buffered and clipped commitments, merged busy spans, minimum-window filtering, typed errors, and a Hypothesis suite checked against an independent minute-by-minute oracle.
 
 ## Requirements
 
@@ -71,6 +73,16 @@ The design contract is a real check, not a convention. `tools/design-checks.mjs`
 Each of those checks is itself tested with a synthetic failing case, because a check that cannot fail is not a check.
 
 Computed layout is verified separately in a real browser by `tools/layout-check.mjs`: 48px minimum touch targets, no horizontal overflow, no clipped headings, and the resolved body font — at 320, 390, and 430px.
+
+The scheduler suite adds 33 cases, three of them property-based over 250–300 generated days, and checks the scheduler against an independent brute-force oracle that marks every minute of the day free or busy.
+
+## Scheduling model
+
+The planning day is the user's waking day — wake to bedtime — not midnight to midnight, so sleep is never offered as available time and midnight is not a special case.
+
+All arithmetic is whole minutes; seconds are floored. Each commitment is padded by a buffer and clipped to the day, overlapping and adjacent commitments merge into single busy spans, and gaps shorter than the minimum window are discarded rather than offered as two-minute exercise slots.
+
+Bedtimes after midnight are not representable in a same-day model. Onboarding maps them to 23:59, which only discards the tail of the evening.
 
 ## Design system
 
