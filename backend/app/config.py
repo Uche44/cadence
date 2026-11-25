@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
 
+    session_ttl_hours: int = 168
     static_dir: Path = DEFAULT_STATIC_DIR
     safety_packs_dir: Path = DEFAULT_PACKS_DIR
 

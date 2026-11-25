@@ -75,14 +75,14 @@ export function Welcome() {
 
       <div className="mt-2 flex w-full flex-col gap-3">
         <Link
-          to="/today"
+          to="/signup"
           className={pillButtonClasses({ variant: 'primary', size: 'lg', fullWidth: true })}
         >
           Get started
           <ChevronRightIcon width={18} height={18} aria-hidden="true" />
         </Link>
         <Link
-          to="/today"
+          to="/login"
           className={pillButtonClasses({ variant: 'secondary', size: 'lg', fullWidth: true })}
         >
           I already have an account

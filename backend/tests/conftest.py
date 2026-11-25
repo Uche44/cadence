@@ -3,6 +3,9 @@
 Every test builds its own settings and its own app. Nothing reads the
 developer's ``.env`` or the process environment, so the suite gives the same
 answer on a laptop, on a CI box, and on the demo machine.
+
+Database-backed tests get a real migrated SQLite file, never ``create_all``, so
+what they exercise is the schema that will actually ship.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.main import create_app
+from tests.support import upgrade_to_head
 
 INDEX_HTML = (
     "<!doctype html><html><head><title>Cadence</title></head>"
@@ -42,4 +46,28 @@ def settings(static_dir: Path) -> Settings:
 @pytest.fixture
 def client(settings: Settings) -> Iterator[TestClient]:
     with TestClient(create_app(settings)) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def database_url(tmp_path: Path) -> str:
+    """A migrated SQLite file, fresh for each test."""
+    url = f"sqlite:///{tmp_path / 'cadence.db'}"
+    upgrade_to_head(url)
+    return url
+
+
+@pytest.fixture
+def db_settings(static_dir: Path, database_url: str) -> Settings:
+    return Settings(
+        environment="test",
+        static_dir=static_dir,
+        database_url=database_url,
+        _env_file=None,
+    )
+
+
+@pytest.fixture
+def db_client(db_settings: Settings) -> Iterator[TestClient]:
+    with TestClient(create_app(db_settings)) as test_client:
         yield test_client

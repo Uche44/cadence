@@ -6,7 +6,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 6 of 15 implemented, pending review** — persistence and the domain model.
+**Milestone 7 of 15 implemented, pending review** — accounts and sessions.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
@@ -18,7 +18,9 @@ M4 gave you: five authored condition packs that resolve into one most-restrictiv
 
 M5 gave you: `validate_plan`, a gate that reports every way a candidate plan breaks the rules; `build_fallback_plan`, a deterministic gentle plan used when generation fails; and `red_flag_stop`, which ends the day instead of planning one.
 
-M6 gives you: ten tables covering the whole flow, with integrity enforced by SQLite rather than by convention, and Alembic migrations that apply from empty, re-run safely, and are checked against the models for drift.
+M6 gave you: ten tables covering the whole flow, with integrity enforced by SQLite rather than by convention, and Alembic migrations that apply from empty, re-run safely, and are checked against the models for drift.
+
+M7 gives you: real accounts, hardened session cookies, a server-side logout, sign-up and log-in screens, and a gate that keeps every app screen closed to anonymous requests.
 
 ## Requirements
 
@@ -162,6 +164,20 @@ Time is stored as **minutes since midnight** rather than as SQLite time strings.
 Uniqueness and ordering are database constraints, not conventions: one account per email (case-insensitively), one profile per user, one check-in per local day, one plan per check-in, one completion per block, one consent per version, ordered start and end minutes on commitments and blocks, bedtime after wake time, and a session that expires after it begins. Deleting a user cascades to everything they own.
 
 The suite also compares the migrated schema against the SQLAlchemy models, because drift between the two is a silent production break.
+
+## Accounts and sessions
+
+Passwords are hashed with Argon2id. A session is a random token the browser holds; the database stores only its SHA-256 hash, so a database dump cannot be replayed as a login.
+
+The cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` whenever the environment is production. Expiry is absolute, not sliding: a session ends when it ends, which makes "replaying an old cookie" a testable statement.
+
+Signing out deletes the session row, so the old cookie stops working even if a browser kept a copy. Wrong password and unknown email return the same status and the same body, and the unknown-email path still verifies against a dummy hash so the response time does not reveal whether an account exists.
+
+State-changing auth requests are refused when a browser says they came from another origin. `next` return paths are only honoured when they point inside this site; anything absolute, protocol-relative, or containing a scheme falls back to `/today`.
+
+Deliberately not built: biometric sign-in and "forgot password". Password reset needs email delivery, and a dead button that promises it would be worse than its absence.
+
+Every app route is wrapped in `RequireAuth`; anonymous visitors are redirected to log in, and the API answers them with a JSON 401 rather than an HTML page.
 
 ## Configuration
 

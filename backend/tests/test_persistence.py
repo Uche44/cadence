@@ -46,8 +46,8 @@ from app.db import (
 from app.db.base import Base
 from app.main import create_app
 from app.safety.models import Intensity
+from tests.support import BACKEND_DIR, upgrade_to_head
 
-BACKEND_DIR = Path(__file__).resolve().parents[1]
 EXPECTED_TABLES = {
     "users",
     "profiles",
@@ -60,18 +60,6 @@ EXPECTED_TABLES = {
     "completions",
     "symptom_notes",
 }
-
-
-def upgrade_to_head(url: str) -> None:
-    config = Config(str(BACKEND_DIR / "alembic.ini"))
-    config.set_main_option("script_location", str(BACKEND_DIR / "migrations"))
-    config.set_main_option("sqlalchemy.url", url)
-    command.upgrade(config, "head")
-
-
-@pytest.fixture
-def database_url(tmp_path: Path) -> str:
-    return f"sqlite:///{tmp_path / 'cadence.db'}"
 
 
 @pytest.fixture

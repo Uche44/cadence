@@ -17,7 +17,9 @@ import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 
 const WIDTHS = [320, 390, 430]
-const PATHS = ['/', '/today', '/design']
+// The app is gated now, so the two states are checked separately.
+const SIGNED_OUT_PATHS = ['/', '/signup', '/login']
+const SIGNED_IN_PATHS = ['/today', '/design']
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -30,8 +32,19 @@ const MIME_TYPES = {
 }
 
 function startServer(root) {
+  let signedIn = false
   const server = createServer((request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
+
+    if (pathname === '/api/auth/me') {
+      response.writeHead(signedIn ? 200 : 401, { 'content-type': 'application/json' })
+      response.end(
+        signedIn
+          ? JSON.stringify({ id: 'u1', email: 'ada@example.com', display_name: 'Ada Lovelace' })
+          : JSON.stringify({ detail: 'Sign in to continue.' }),
+      )
+      return
+    }
 
     // The app probes the API on load; answer honestly so screenshots are not
     // dominated by an offline banner that has nothing to do with layout.
@@ -60,7 +73,13 @@ function startServer(root) {
   return new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
-      resolve({ server, baseUrl: `http://127.0.0.1:${address.port}` })
+      resolve({
+        server,
+        baseUrl: `http://127.0.0.1:${address.port}`,
+        setSignedIn: (value) => {
+          signedIn = value
+        },
+      })
     })
   })
 }
@@ -132,7 +151,7 @@ if (invokedDirectly) {
   const screenshotsDir = join(frontendRoot, '..', 'screenshots')
   mkdirSync(screenshotsDir, { recursive: true })
 
-  const { server, baseUrl } = await startServer(dist)
+  const { server, baseUrl, setSignedIn } = await startServer(dist)
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
     args: ['--no-sandbox'],
@@ -147,21 +166,29 @@ if (invokedDirectly) {
         deviceScaleFactor: 2,
       })
 
-      for (const path of PATHS) {
-        await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' })
-        const result = await measure(page, width, path)
-        problems.push(...result.problems)
+      for (const [paths, authenticated] of [
+        [SIGNED_OUT_PATHS, false],
+        [SIGNED_IN_PATHS, true],
+      ]) {
+        setSignedIn(authenticated)
 
-        const slug = path === '/' ? 'welcome' : path.replace(/\//g, '-').replace(/^-/, '')
-        await page.screenshot({
-          path: join(screenshotsDir, `m2-${width}-${slug}.png`),
-          fullPage: true,
-        })
+        for (const path of paths) {
+          await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' })
+          const result = await measure(page, width, path)
+          problems.push(...result.problems)
+
+          const slug = path === '/' ? 'welcome' : path.replace(/\//g, '-').replace(/^-/, '')
+          await page.screenshot({
+            path: join(screenshotsDir, `m7-${width}-${slug}.png`),
+            fullPage: true,
+          })
+        }
       }
 
       await page.close()
     }
 
+    setSignedIn(true)
     const navPage = await browser.newPage({ viewport: { width: 390, height: 900 } })
     await navPage.goto(`${baseUrl}/today`, { waitUntil: 'networkidle' })
     const navState = await navPage.evaluate(() => {
