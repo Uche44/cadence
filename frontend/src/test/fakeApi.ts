@@ -1,6 +1,15 @@
 import { vi } from 'vitest'
 
 import type { AuthUser } from '../api/auth'
+import type {
+  CheckinData,
+  CheckinStop,
+  CheckinWindow,
+  Commitment,
+  CommitmentInput,
+  Energy,
+  SymptomOption,
+} from '../api/checkin'
 import type { OnboardingData, OnboardingOption, OnboardingRules } from '../api/onboarding'
 
 export const TEST_USER: AuthUser = {
@@ -250,6 +259,151 @@ interface FakeApiOptions {
   onSignup?: () => Response
 }
 
+const SYMPTOM_OPTIONS: SymptomOption[] = [
+  {
+    key: 'slept_badly',
+    label: 'Slept badly',
+    description: 'Rest was broken or short',
+    red_flag: false,
+  },
+  {
+    key: 'sore',
+    label: 'Feeling sore',
+    description: 'Muscles or joints are tender',
+    red_flag: false,
+  },
+  { key: 'stiff', label: 'Stiff joints', description: 'Movement feels sticky', red_flag: false },
+  {
+    key: 'anxious',
+    label: 'Feeling anxious',
+    description: 'Stress is running high',
+    red_flag: false,
+  },
+  {
+    key: 'night_shift',
+    label: 'Shift work / night shift',
+    description: 'An odd start',
+    red_flag: false,
+  },
+  { key: 'traveling', label: 'Traveling', description: 'Away from routine', red_flag: false },
+  {
+    key: 'dizziness',
+    label: 'Dizziness / off-balance',
+    description: 'Dizzy or unsteady',
+    red_flag: true,
+  },
+  {
+    key: 'chest_pain',
+    label: 'Chest pain or pressure',
+    description: 'Pain or tightness',
+    red_flag: true,
+  },
+  {
+    key: 'breathless',
+    label: 'Shortness of breath',
+    description: 'Breathless at rest',
+    red_flag: true,
+  },
+  {
+    key: 'faint',
+    label: 'Fainting or near-fainting',
+    description: 'You fainted or almost did',
+    red_flag: true,
+  },
+  {
+    key: 'leg_weakness',
+    label: 'Numbness or weakness in legs',
+    description: 'New numbness or weakness',
+    red_flag: true,
+  },
+  {
+    key: 'shaky',
+    label: 'Shakiness or confusion',
+    description: 'Shaky or confused',
+    red_flag: true,
+  },
+  { key: 'vision', label: 'Blurred vision', description: 'New blurring', red_flag: true },
+  {
+    key: 'foot_wound',
+    label: 'Foot wound getting worse',
+    description: 'A worsening wound',
+    red_flag: true,
+  },
+  { key: 'none', label: 'None / feeling good', description: 'Nothing unusual', red_flag: false },
+]
+
+const RED_FLAG_MATCHES: Record<string, string> = {
+  'Chest pain or pressure': 'chest pain, pressure or tightness',
+  'Dizziness / off-balance': 'sudden dizziness or lightheadedness',
+  'Shortness of breath': 'severe shortness of breath at rest',
+  'Fainting or near-fainting': 'fainting or near-fainting',
+  'Numbness or weakness in legs': 'progressive weakness in one or both legs',
+  'Shakiness or confusion': 'shakiness, sweating or confusion that could be low blood sugar',
+  'Blurred vision': 'sudden blurred vision',
+  'Foot wound getting worse': 'a foot wound or blister that is getting worse',
+}
+
+function stopFor(symptoms: string[]): CheckinStop | null {
+  const matched = symptoms
+    .map((symptom) => RED_FLAG_MATCHES[symptom])
+    .filter((value): value is string => Boolean(value))
+  if (matched.length === 0) return null
+  return {
+    matched: [...new Set(matched)],
+    guidance:
+      'Stop for today. If these symptoms are severe, or do not settle within a few minutes, seek medical help.',
+  }
+}
+
+function freeWindows(
+  commitments: CommitmentInput[],
+  dayStart: number,
+  dayEnd: number,
+): CheckinWindow[] {
+  const spans = commitments
+    .filter((commitment) => commitment.end_minute > commitment.start_minute)
+    .map(
+      (commitment) =>
+        [Math.max(dayStart, commitment.start_minute), Math.min(dayEnd, commitment.end_minute)] as [
+          number,
+          number,
+        ],
+    )
+    .filter(([startMinute, endMinute]) => endMinute > startMinute)
+    .sort((left, right) => left[0] - right[0])
+
+  const merged: [number, number][] = []
+  for (const [startMinute, endMinute] of spans) {
+    const last = merged.at(-1)
+    if (last && startMinute <= last[1]) {
+      last[1] = Math.max(last[1], endMinute)
+    } else {
+      merged.push([startMinute, endMinute])
+    }
+  }
+
+  const windows: CheckinWindow[] = []
+  let cursor = dayStart
+  for (const [startMinute, endMinute] of merged) {
+    if (startMinute - cursor >= 5) {
+      windows.push({
+        start_minute: cursor,
+        end_minute: startMinute,
+        duration_minutes: startMinute - cursor,
+      })
+    }
+    cursor = Math.max(cursor, endMinute)
+  }
+  if (dayEnd - cursor >= 5) {
+    windows.push({
+      start_minute: cursor,
+      end_minute: dayEnd,
+      duration_minutes: dayEnd - cursor,
+    })
+  }
+  return windows
+}
+
 /**
  * A small stand-in for the API, so screen tests exercise real request shapes
  * instead of mocking the client module out of existence.
@@ -257,10 +411,36 @@ interface FakeApiOptions {
 export function installFakeApi({ me = null, onboarding, onLogin, onSignup }: FakeApiOptions = {}) {
   let signedIn = me !== null
   let state: OnboardingData | null = onboarding ?? null
+  let checkin: CheckinData | null = null
+  let commitmentCounter = 0
 
   const current = (): OnboardingData => {
     if (!state) state = completeOnboarding()
     return state
+  }
+
+  const checkinState = (): CheckinData => {
+    if (checkin) return { ...checkin, planning: current().planning }
+    const onboardingState = current()
+    return {
+      date: '2026-11-28',
+      exists: false,
+      energy: null,
+      symptoms: [],
+      notes: null,
+      commitments: [],
+      windows: freeWindows(
+        [],
+        onboardingState.profile.wake_minute,
+        onboardingState.profile.bed_minute,
+      ),
+      day_start_minute: onboardingState.profile.wake_minute,
+      day_end_minute: onboardingState.profile.bed_minute,
+      red_flag: null,
+      red_flag_symptoms: onboardingState.rules.red_flags,
+      options: { symptoms: SYMPTOM_OPTIONS },
+      planning: onboardingState.planning,
+    }
   }
 
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -296,6 +476,8 @@ export function installFakeApi({ me = null, onboarding, onLogin, onSignup }: Fak
     if (url.includes('/api/auth/logout') && method === 'POST') {
       signedIn = false
       state = null
+      checkin = null
+      commitmentCounter = 0
       return noContent()
     }
 
@@ -357,6 +539,69 @@ export function installFakeApi({ me = null, onboarding, onLogin, onSignup }: Fak
         rules: home.rules,
         stale_plans: 0,
       })
+    }
+
+    if (url.includes('/api/checkin/preview') && method === 'POST') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      const body = init?.body ? JSON.parse(String(init.body)) : {}
+      const previous = checkinState()
+      const incoming: CommitmentInput[] = body.commitments ?? []
+      return json({
+        commitments: incoming.map((commitment) => ({
+          id: commitment.id ?? null,
+          label: commitment.label,
+          start_minute: commitment.start_minute,
+          end_minute: commitment.end_minute,
+        })),
+        windows: freeWindows(incoming, previous.day_start_minute, previous.day_end_minute),
+        day_start_minute: previous.day_start_minute,
+        day_end_minute: previous.day_end_minute,
+        red_flag: stopFor(body.symptoms ?? []),
+        red_flag_symptoms: previous.red_flag_symptoms,
+      })
+    }
+
+    if (url.includes('/api/checkin') && method === 'GET') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      return json(checkinState())
+    }
+
+    if (url.includes('/api/checkin') && method === 'PUT') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      const body = init?.body ? JSON.parse(String(init.body)) : {}
+      const previous = checkinState()
+      const incoming: CommitmentInput[] = body.commitments ?? []
+      const commitments: Commitment[] = incoming.map((commitment) => {
+        const existing = previous.commitments.find((item) => item.id === commitment.id)
+        if (existing) {
+          return {
+            ...existing,
+            label: commitment.label,
+            start_minute: commitment.start_minute,
+            end_minute: commitment.end_minute,
+          }
+        }
+        commitmentCounter += 1
+        return {
+          id: `commit-${commitmentCounter}`,
+          label: commitment.label,
+          start_minute: commitment.start_minute,
+          end_minute: commitment.end_minute,
+        }
+      })
+      const symptoms: string[] = body.symptoms ?? []
+      checkin = {
+        ...previous,
+        exists: true,
+        energy: (body.energy ?? 'steady') as Energy,
+        symptoms,
+        notes: body.notes ?? null,
+        commitments,
+        windows: freeWindows(commitments, previous.day_start_minute, previous.day_end_minute),
+        red_flag: stopFor(symptoms),
+        planning: current().planning,
+      }
+      return json(checkin)
     }
 
     return json({ detail: 'not found' }, 404)

@@ -44,6 +44,10 @@ export function Today() {
       )}
 
       {data ? <RulesSummary rules={data.rules} /> : null}
+
+      <Link to="/checkin" className={pillButtonClasses({ fullWidth: true })}>
+        Morning check-in
+      </Link>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { PublicOnly, RequireAuth } from './auth/guards'
 import { OnboardingProvider } from './onboarding/OnboardingProvider'
 import { OnboardingIndex, RequireReady, StepGate } from './onboarding/guards'
 import { AppShell } from './shell/AppShell'
+import { Checkin } from './routes/Checkin'
 import { DesignSystem } from './routes/DesignSystem'
 import { LogIn } from './routes/LogIn'
 import { NotFound } from './routes/NotFound'
@@ -96,6 +97,16 @@ export function App() {
                 <RequireAuth>
                   <RequireReady>
                     <Today />
+                  </RequireReady>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/checkin"
+              element={
+                <RequireAuth>
+                  <RequireReady>
+                    <Checkin />
                   </RequireReady>
                 </RequireAuth>
               }

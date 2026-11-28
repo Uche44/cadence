@@ -6,7 +6,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 8 of 15 implemented, pending review** — onboarding, rules, and consent.
+**Milestone 9 of 15 implemented, pending review** — morning check-in and commitments.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
@@ -23,6 +23,8 @@ M6 gave you: ten tables covering the whole flow, with integrity enforced by SQLi
 M7 gives you: real accounts, hardened session cookies, a server-side logout, sign-up and log-in screens, and a gate that keeps every app screen closed to anonymous requests.
 
 M8 gives you: four ordered onboarding steps for health, interests, and routine; server-side validation and step resumption; the resolved safety caps shown back to the user; a real doctor-clearance gate that explains itself instead of failing; a versioned consent record that closes the app until accepted; and profile edits that re-resolve the rules and mark plans built under old rules as stale.
+
+M9 gives you: a 30-second morning check-in for energy, symptoms, notes, and fixed commitments; one record per user's local day, updated in place; merged free-window previews that refresh as commitments are added, edited, or deleted; and an immediate red-flag stop signal from the check-in endpoint before any planning begins.
 
 ## Requirements
 
