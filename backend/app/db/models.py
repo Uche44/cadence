@@ -239,6 +239,11 @@ class Plan(Base):
     )
     # Which packs produced these rules, so a plan can explain itself later.
     pack_ids: Mapped[list[str]] = mapped_column(StringList, default=list)
+    # The exact rule set the plan was built under. When the profile changes and
+    # the resolved rules change with it, the old plan is marked stale rather than
+    # left looking correct under limits that no longer apply.
+    rules_fingerprint: Mapped[str | None] = mapped_column(String(64))
+    stale: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     fallback_reason: Mapped[str | None] = mapped_column(Text)
     generated_at: Mapped[datetime] = mapped_column(UtcTimestamp, default=utcnow)
 

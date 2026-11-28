@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 
 import type { AuthUser } from '../api/auth'
+import type { OnboardingData, OnboardingOption, OnboardingRules } from '../api/onboarding'
 
 export const TEST_USER: AuthUser = {
   id: 'user-1',
@@ -19,9 +20,232 @@ export function noContent(): Response {
   return new Response(null, { status: 204 })
 }
 
+const BASELINE_RULES: OnboardingRules = {
+  pack_ids: ['baseline'],
+  max_intensity: 'moderate',
+  max_block_minutes: 30,
+  min_block_minutes: 5,
+  max_daily_minutes: 60,
+  blocked_tags: [],
+  red_flags: ['chest pain, pressure or tightness'],
+  sources: ['WHO 2020 Guidelines on physical activity and sedentary behaviour'],
+  guidance: [],
+  requires_doctor_clearance: false,
+  is_conservative: false,
+  notices: [],
+  fingerprint: 'baseline-fingerprint',
+}
+
+const CONDITION_OPTIONS: OnboardingOption[] = [
+  {
+    key: 'Type 2 diabetes',
+    label: 'Type 2 Diabetes',
+    description: 'Targeting glucose uptake after meals',
+    emoji: '',
+    icon: 'droplet',
+  },
+  {
+    key: 'Hypertension',
+    label: 'Hypertension',
+    description: 'Lowers resting blood pressure',
+    emoji: '',
+    icon: 'heart',
+  },
+  {
+    key: 'Chronic low back pain / mild arthritis',
+    label: 'Chronic back pain / arthritis',
+    description: 'Spine decompression & joint mobility',
+    emoji: '',
+    icon: 'back',
+  },
+  {
+    key: 'Other chronic condition',
+    label: 'Other chronic condition',
+    description: 'Add auto-immune, respiratory, or other',
+    emoji: '',
+    icon: 'plus',
+  },
+  {
+    key: 'none',
+    label: 'No condition - just stay fit',
+    description: 'General fitness guidance, no clearance needed',
+    emoji: '',
+    icon: 'leaf',
+  },
+]
+
+const INTEREST_OPTIONS: OnboardingOption[] = [
+  {
+    key: 'Music & dancing',
+    label: 'Music & dancing',
+    description: 'Rhythm, joy, effortless cardio',
+    emoji: '💃',
+    icon: '',
+  },
+  {
+    key: 'Walking in nature',
+    label: 'Walking in nature',
+    description: 'Fresh air, birdsong & calm strides',
+    emoji: '🌿',
+    icon: '',
+  },
+  {
+    key: 'Gardening',
+    label: 'Gardening',
+    description: 'Potting, tending & gentle squats',
+    emoji: '🌱',
+    icon: '',
+  },
+  {
+    key: 'Swimming & water aerobics',
+    label: 'Swimming & water aerobics',
+    description: 'Zero joint pressure, soothing float',
+    emoji: '🏊‍♀️',
+    icon: '',
+  },
+  {
+    key: 'Phone calls with friends',
+    label: 'Phone calls with friends',
+    description: 'Walking laps while catching up',
+    emoji: '📞',
+    icon: '',
+  },
+  {
+    key: 'Watching favorite TV / shows',
+    label: 'Watching favorite TV / shows',
+    description: 'Commercial break stretching',
+    emoji: '📺',
+    icon: '',
+  },
+  {
+    key: 'Cooking & baking',
+    label: 'Cooking & baking',
+    description: 'Kitchen mobility & posture shifts',
+    emoji: '🍲',
+    icon: '',
+  },
+  {
+    key: 'Prayer & quiet meditation',
+    label: 'Prayer & quiet meditation',
+    description: 'Deep diaphragm breathing & release',
+    emoji: '🧘',
+    icon: '',
+  },
+  {
+    key: 'Gentle stretching in bed',
+    label: 'Gentle stretching in bed',
+    description: 'Morning waking & spine alignment',
+    emoji: '🛏️',
+    icon: '',
+  },
+]
+
+const EQUIPMENT_OPTIONS: OnboardingOption[] = [
+  {
+    key: 'bodyweight',
+    label: 'None / Bodyweight only',
+    description: 'Gentle bed & floor-friendly flows',
+    emoji: '',
+    icon: 'bodyweight',
+  },
+  {
+    key: 'resistance bands',
+    label: 'Resistance loop bands',
+    description: 'Low-impact joint stabilizing',
+    emoji: '',
+    icon: 'bands',
+  },
+  {
+    key: 'light dumbbells',
+    label: 'Light dumbbells (2-5 lbs)',
+    description: 'Progressive bone density support',
+    emoji: '',
+    icon: 'dumbbell',
+  },
+  {
+    key: 'walking pad',
+    label: 'Walking pad / Gym access',
+    description: 'Controlled micro-pacing options',
+    emoji: '',
+    icon: 'walk',
+  },
+]
+
+const COMPLETE_PROFILE: OnboardingData['profile'] = {
+  conditions: [],
+  interests: ['Music & dancing', 'Walking in nature', 'Gardening'],
+  equipment: ['bodyweight'],
+  wake_minute: 390,
+  bed_minute: 1335,
+  doctor_clearance: false,
+}
+
+export function completeOnboarding(
+  overrides: Partial<OnboardingData> = {},
+  profile: Partial<OnboardingData['profile']> = {},
+): OnboardingData {
+  return {
+    completed_step: 4,
+    resume_step: 4,
+    completed: true,
+    profile: { ...COMPLETE_PROFILE, ...profile },
+    rules: BASELINE_RULES,
+    eligible_exercises: [
+      {
+        id: 'chair_march',
+        label: 'Seated or chair marching',
+        tags: ['walking', 'mobility'],
+        requires: [],
+        floor_based: false,
+      },
+      {
+        id: 'floor_bridge',
+        label: 'Floor glute bridge',
+        tags: ['floor', 'strength'],
+        requires: ['bodyweight'],
+        floor_based: true,
+      },
+    ],
+    consent: {
+      version: '2026-11',
+      accepted: true,
+      accepted_at: '2026-11-26T09:00:00Z',
+    },
+    planning: { ready: true, blocked_reason: null, message: null },
+    options: {
+      conditions: CONDITION_OPTIONS,
+      interests: INTEREST_OPTIONS,
+      equipment: EQUIPMENT_OPTIONS,
+    },
+    ...overrides,
+  }
+}
+
+export function incompleteOnboarding(
+  completedStep = 0,
+  overrides: Partial<OnboardingData> = {},
+  profile: Partial<OnboardingData['profile']> = {},
+): OnboardingData {
+  const base = completeOnboarding(overrides, profile)
+  return {
+    ...base,
+    completed_step: completedStep,
+    resume_step: Math.min(completedStep + 1, 4),
+    completed: false,
+    consent: { version: '2026-11', accepted: false, accepted_at: null },
+    planning: {
+      ready: false,
+      blocked_reason: 'onboarding',
+      message: 'Finish the four setup steps before we build a plan.',
+    },
+  }
+}
+
 interface FakeApiOptions {
   /** Who the session check should report. `null` means signed out. */
   me?: AuthUser | null
+  /** The onboarding state to serve. Defaults to complete once signed in. */
+  onboarding?: OnboardingData
   onLogin?: () => Response
   onSignup?: () => Response
 }
@@ -30,7 +254,15 @@ interface FakeApiOptions {
  * A small stand-in for the API, so screen tests exercise real request shapes
  * instead of mocking the client module out of existence.
  */
-export function installFakeApi({ me = null, onLogin, onSignup }: FakeApiOptions = {}) {
+export function installFakeApi({ me = null, onboarding, onLogin, onSignup }: FakeApiOptions = {}) {
+  let signedIn = me !== null
+  let state: OnboardingData | null = onboarding ?? null
+
+  const current = (): OnboardingData => {
+    if (!state) state = completeOnboarding()
+    return state
+  }
+
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     const method = (init?.method ?? 'GET').toUpperCase()
@@ -46,17 +278,85 @@ export function installFakeApi({ me = null, onLogin, onSignup }: FakeApiOptions 
     }
 
     if (url.includes('/api/auth/login') && method === 'POST') {
-      return onLogin ? onLogin() : json({ detail: 'That email and password do not match.' }, 401)
+      const response = onLogin
+        ? onLogin()
+        : json({ detail: 'That email and password do not match.' }, 401)
+      if (response.ok) signedIn = true
+      return response
     }
 
     if (url.includes('/api/auth/signup') && method === 'POST') {
-      return onSignup
+      const response = onSignup
         ? onSignup()
         : json({ detail: 'An account with that email already exists.' }, 409)
+      if (response.ok) signedIn = true
+      return response
     }
 
     if (url.includes('/api/auth/logout') && method === 'POST') {
+      signedIn = false
+      state = null
       return noContent()
+    }
+
+    if (url.includes('/api/onboarding') && method === 'GET') {
+      return signedIn ? json(current()) : json({ detail: 'Sign in to continue.' }, 401)
+    }
+
+    if (/\/api\/onboarding\/steps\/\d+/.test(url) && method === 'PUT') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      const step = Number(url.slice(url.lastIndexOf('/') + 1))
+      const body = init?.body ? JSON.parse(String(init.body)) : {}
+      const previous = current()
+      const profile = { ...previous.profile, ...body }
+      state = {
+        ...previous,
+        profile,
+        completed_step: Math.max(previous.completed_step, step),
+        resume_step: Math.min(Math.max(previous.completed_step, step) + 1, 4),
+      }
+      return json(state)
+    }
+
+    if (url.includes('/api/onboarding/consent') && method === 'POST') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      const previous = current()
+      const needsClearance =
+        previous.rules.requires_doctor_clearance && !previous.profile.doctor_clearance
+      state = {
+        ...previous,
+        completed_step: 4,
+        resume_step: 4,
+        completed: true,
+        consent: {
+          version: '2026-11',
+          accepted: true,
+          accepted_at: '2026-11-26T10:00:00Z',
+        },
+        planning: needsClearance
+          ? {
+              ready: false,
+              blocked_reason: 'doctor_clearance',
+              message:
+                'Your doctor has not cleared you for light exercise yet. This is not an error — it is a safety step.',
+            }
+          : { ready: true, blocked_reason: null, message: null },
+      }
+      return json(state)
+    }
+
+    if (url.includes('/api/home') && method === 'GET') {
+      if (!signedIn) return json({ detail: 'Sign in to continue.' }, 401)
+      const home = current()
+      if (!home.consent.accepted) {
+        return json({ detail: 'Accept the current safety notice to continue.' }, 403)
+      }
+      return json({
+        display_name: me?.displayName ?? 'Ada Lovelace',
+        planning: home.planning,
+        rules: home.rules,
+        stale_plans: 0,
+      })
     }
 
     return json({ detail: 'not found' }, 404)

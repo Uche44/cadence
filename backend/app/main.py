@@ -17,6 +17,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.auth import router as auth_router
 from app.api.health import router as health_router
+from app.api.home import router as home_router
+from app.api.onboarding import router as onboarding_router
+from app.api.profile import router as profile_router
 from app.config import Settings, get_settings
 from app.db import create_engine_for, create_session_factory
 from app.safety.registry import PackRegistry
@@ -54,6 +57,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Order matters: real routes, then the API 404 responder, then the shell.
     application.include_router(health_router, prefix=API_PREFIX)
     application.include_router(auth_router, prefix=API_PREFIX)
+    application.include_router(onboarding_router, prefix=API_PREFIX)
+    application.include_router(profile_router, prefix=API_PREFIX)
+    application.include_router(home_router, prefix=API_PREFIX)
     _register_api_fallback(application)
     _register_frontend(application, resolved)
     _register_error_handlers(application)

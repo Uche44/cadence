@@ -6,7 +6,7 @@ Tagline: *Exercise that keeps pace with your life.*
 
 ## Status
 
-**Milestone 7 of 15 implemented, pending review** — accounts and sessions.
+**Milestone 8 of 15 implemented, pending review** — onboarding, rules, and consent.
 
 See [MILESTONES.md](MILESTONES.md) for the full plan and [overview.md](overview.md) for the product brief. Each milestone is gated on review.
 
@@ -21,6 +21,8 @@ M5 gave you: `validate_plan`, a gate that reports every way a candidate plan bre
 M6 gave you: ten tables covering the whole flow, with integrity enforced by SQLite rather than by convention, and Alembic migrations that apply from empty, re-run safely, and are checked against the models for drift.
 
 M7 gives you: real accounts, hardened session cookies, a server-side logout, sign-up and log-in screens, and a gate that keeps every app screen closed to anonymous requests.
+
+M8 gives you: four ordered onboarding steps for health, interests, and routine; server-side validation and step resumption; the resolved safety caps shown back to the user; a real doctor-clearance gate that explains itself instead of failing; a versioned consent record that closes the app until accepted; and profile edits that re-resolve the rules and mark plans built under old rules as stale.
 
 ## Requirements
 

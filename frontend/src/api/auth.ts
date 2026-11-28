@@ -71,7 +71,7 @@ export function describeError(status: number, body: unknown): ApiError {
   return new ApiError(status, GENERIC_FAILURE)
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
     credentials: 'same-origin',
     ...init,
